@@ -15,5 +15,7 @@ class ViewController: UIViewController {
     }
 
 
+    @IBAction func chooseSports(_ sender: Any) {
+    }
 }
 
