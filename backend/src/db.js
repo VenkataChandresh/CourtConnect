@@ -1,4 +1,6 @@
 const mysql = require("mysql2");
+
+//grabs the dotenv tool and the config word will turn it on
 require("dotenv").config();
 
 const pool = mysql.createPool({
@@ -6,18 +8,12 @@ const pool = mysql.createPool({
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
+  port: process.env.DB_PORT,
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0,
 });
 
-const promisePool = pool.promise();
+const promisepool = pool.promise();
 
-pool.getConnection((err, connection) => {
-    if ( err) {
-        return console.error("Error connecting to the database:", err);
-    } else {
-        console.log("Database connection established successfully.");
-        connection.release();
-    }
-
-})
-
-module.exports = promisePool;
+module.exports = promisepool;
