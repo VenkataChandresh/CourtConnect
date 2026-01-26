@@ -1,8 +1,10 @@
 <template>
-  <div class="login">
-    <h2>login</h2>
+  <div class="signup">
+    <h2>Signup</h2>
 
-    <form @submit.prevent="handleLogin">
+    <form @submit.prevent="handleSubmit">
+      <input type="text" v-model="user_fname" placeholder="First Name" />
+      <input type="text" v-model="user_lname" placeholder="Last Name" />
       <input type="email" v-model="email" placeholder="Email" />
       <input type="password" v-model="password" placeholder="Password" />
       <button type="submit">Signup</button>
@@ -13,28 +15,35 @@
 <script setup>
 import { ref } from "vue";
 defineOptions({
-  name: "Login",
+  name: "Signup",
 });
-
+const user_fname = ref("");
+const user_lname = ref("");
 const email = ref("");
 const password = ref("");
 
 //Function to send the username and password to database. Triggers when user submits the form on the login page
-const handleLogin = async () => {
+const handleSignup = async () => {
   //sending the username and password to backend
-  const response = await fetch("http://localhost:6969/login", {
+  const response = await fetch("http://localhost:6969/", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
+      user_fname: user_fname.value,
+      user_lname: user_lname.value,
       email: email.value,
       password: password.value,
     }),
   });
+  user_fname.value = "";
+  user_lname.value = "";
+  email.value = "";
+  password.value = "";
 };
 </script>
 
 <style scoped>
-.login {
+.signup {
   max-width: 380px;
   margin: 120px auto;
   padding: 32px;
