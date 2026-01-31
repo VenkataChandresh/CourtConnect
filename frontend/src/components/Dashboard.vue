@@ -17,8 +17,9 @@
           🔔
         </button>
         <div class="user-avatar">
+          <!-- using the inital variable to display the user logo-->
           <img
-            src="https://ui-avatars.com/api/?name=AV&background=4F46E5&color=fff"
+            :src="`https://ui-avatars.com/api/?name=${initials}&background=4F46E5&color=fff`"
           />
         </div>
       </div>
@@ -150,7 +151,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 
 defineOptions({
@@ -165,6 +166,19 @@ onMounted(() => {
   if (storedUser) {
     user.value = JSON.parse(storedUser);
   }
+});
+
+/**
+---------------------------------------------------------------------------------------------
+ To make the user logo dynamic we are extracting the user fname, lname and storing them in caps 
+---------------------------------------------------------------------------------------------
+ */
+const initials = computed(() => {
+  if (!user.value) return "";
+
+  const f = user.value.user_fname?.charAt(0) || "";
+  const l = user.value.user_lname?.charAt(0) || "";
+  return `${f}${l}`.toUpperCase();
 });
 
 const logout = () => {
