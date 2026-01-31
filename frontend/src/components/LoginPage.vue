@@ -5,19 +5,28 @@
     <form @submit.prevent="handleLogin">
       <input type="email" v-model="email" placeholder="Email" />
       <input type="password" v-model="password" placeholder="Password" />
-      <button type="submit">Signup</button>
+      <button type="submit" :disabled="isDisabled">Login</button>
+      <p class="signup-text">
+        No account?
+        <router-link to="/signup" class="signup-link">Create one</router-link>
+      </p>
     </form>
   </div>
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, computed } from "vue";
+import { useRouter } from "vue-router";
 defineOptions({
   name: "Login",
 });
-
+const router = useRouter();
 const email = ref("");
 const password = ref("");
+
+const isDisabled = computed(() => {
+  return !email.value || !password.value;
+});
 
 //Function to send the username and password to database. Triggers when user submits the form on the login page
 const handleLogin = async () => {
@@ -30,6 +39,12 @@ const handleLogin = async () => {
       password: password.value,
     }),
   });
+  const data = await response.json();
+
+  if (response.ok) {
+    localStorage.setItem("user", JSON.stringify(data.user));
+    router.push("/dashboard"); //pushing the router to the home page
+  }
 };
 </script>
 
@@ -108,5 +123,24 @@ button:hover {
 
 button:active {
   transform: scale(0.97);
+}
+.signup-link {
+  color: #4f46e5;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.signup-link:hover {
+  text-decoration: underline;
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #9ca3af;
+}
+
+button:disabled:hover {
+  box-shadow: none;
+  transform: none;
 }
 </style>

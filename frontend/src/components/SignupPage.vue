@@ -2,30 +2,43 @@
   <div class="signup">
     <h2>Signup</h2>
 
-    <form @submit.prevent="handleSubmit">
+    <form @submit.prevent="handleSignup">
       <input type="text" v-model="user_fname" placeholder="First Name" />
       <input type="text" v-model="user_lname" placeholder="Last Name" />
       <input type="email" v-model="email" placeholder="Email" />
       <input type="password" v-model="password" placeholder="Password" />
-      <button type="submit">Signup</button>
+      <button type="submit" :disabled="isDisabled">Signup</button>
+      <p class="login-text">
+        Already have an account?
+        <router-link to="/login" class="login-text-link">Login</router-link>
+      </p>
     </form>
   </div>
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, computed } from "vue";
+import { useRouter } from "vue-router";
 defineOptions({
   name: "Signup",
 });
+const router = useRouter();
 const user_fname = ref("");
 const user_lname = ref("");
 const email = ref("");
 const password = ref("");
 
-//Function to send the username and password to database. Triggers when user submits the form on the login page
+//computed tracks the variables based on changes so we can disable the signup button
+const isDisabled = computed(() => {
+  return (
+    !user_fname.value || !user_lname.value || !email.value || !password.value
+  );
+});
+
+//Function to send the username and password to database. Triggers when user submits the form on the page
 const handleSignup = async () => {
   //sending the username and password to backend
-  const response = await fetch("http://localhost:6969/", {
+  const response = await fetch("http://localhost:6969/signup", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -39,6 +52,10 @@ const handleSignup = async () => {
   user_lname.value = "";
   email.value = "";
   password.value = "";
+
+  if (response.ok) {
+    router.push("/login");
+  }
 };
 </script>
 
@@ -117,5 +134,25 @@ button:hover {
 
 button:active {
   transform: scale(0.97);
+}
+.login-text-link {
+  color: #4f46e5;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.login-text-link:hover {
+  text-decoration: underline;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #9ca3af;
+}
+
+button:disabled:hover {
+  box-shadow: none;
+  transform: none;
 }
 </style>
