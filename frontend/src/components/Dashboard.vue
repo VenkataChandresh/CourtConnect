@@ -61,7 +61,7 @@
             <h1 v-if="user">Welcome, {{ user.user_fname }}</h1>
             <p>Manage your sessions</p>
           </div>
-          <button class="btn-primary">+ New Session</button>
+          <button class="btn-primary" @click="newPost">+ New Session</button>
         </div>
 
         <div class="content-section">
@@ -166,6 +166,7 @@ onMounted(() => {
   if (storedUser) {
     user.value = JSON.parse(storedUser);
   }
+  console.log(user.value?.user_fname);
 });
 
 /**
@@ -184,6 +185,10 @@ const initials = computed(() => {
 const logout = () => {
   localStorage.removeItem("user");
   router.push("/login");
+};
+
+const newPost = () => {
+  router.push("/createPost");
 };
 </script>
 <style scoped>
