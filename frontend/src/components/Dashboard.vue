@@ -75,73 +75,42 @@
           </div>
 
           <div class="sessions-list">
-            <div class="session-card">
+            <div
+              v-for="session in userSessions"
+              :key="session.id"
+              class="session-card"
+            >
               <div class="session-header">
                 <div>
-                  <h3>Elite 5v5 Tournament</h3>
-                  <p class="session-location">📍 Brooklyn Bridge Park</p>
+                  <h3>{{ session.title }}</h3>
+                  <p class="session-location">📍 {{ session.venue }}</p>
                 </div>
-                <span class="badge badge-green">Open</span>
+                <span class="badge badge-green">{{ session.status }}</span>
               </div>
 
               <div class="session-info">
                 <div class="info-item">
                   <span class="label">Players</span>
-                  <span class="value">8 / 10</span>
+                  <span class="value">
+                    {{ session.current_players }} / {{ session.max_players }}
+                  </span>
                 </div>
                 <div class="info-item">
                   <span class="label">Time</span>
-                  <span class="value">Today, 6:00 PM</span>
+                  <span class="value">{{ session.session_time }}</span>
                 </div>
               </div>
 
-              <button class="btn-join">Join Game</button>
-            </div>
-
-            <div class="session-card">
-              <div class="session-header">
-                <div>
-                  <h3>Casual 3v3 Pickup</h3>
-                  <p class="session-location">📍 Central Arena</p>
-                </div>
-                <span class="badge badge-yellow">Filling</span>
-              </div>
-
-              <div class="session-info">
-                <div class="info-item">
-                  <span class="label">Players</span>
-                  <span class="value">5 / 6</span>
-                </div>
-                <div class="info-item">
-                  <span class="label">Time</span>
-                  <span class="value">Today, 8:30 PM</span>
-                </div>
-              </div>
-
-              <button class="btn-join">Join Game</button>
-            </div>
-
-            <div class="session-card">
-              <div class="session-header">
-                <div>
-                  <h3>Morning Practice</h3>
-                  <p class="session-location">📍 Riverside Court</p>
-                </div>
-                <span class="badge badge-gray">Full</span>
-              </div>
-
-              <div class="session-info">
-                <div class="info-item">
-                  <span class="label">Players</span>
-                  <span class="value">10 / 10</span>
-                </div>
-                <div class="info-item">
-                  <span class="label">Time</span>
-                  <span class="value">Tomorrow, 9:00 AM</span>
-                </div>
-              </div>
-
-              <button class="btn-join" disabled>Full</button>
+              <button
+                class="btn-join"
+                :disabled="session.current_players >= session.max_players"
+              >
+                {{
+                  session.current_players >= session.max_players
+                    ? "Session is full"
+                    : "Join Game"
+                }}
+              </button>
             </div>
           </div>
         </div>
@@ -151,27 +120,37 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, toRaw } from "vue";
 import { useRouter } from "vue-router";
 
-defineOptions({
-  name: "Dashboard",
-});
+defineOptions({ name: "Dashboard" });
 
 const user = ref(null);
+var userId = ref(null);
+var userSessions = ref([]);
 const router = useRouter();
 
-onMounted(() => {
+onMounted(async () => {
   const storedUser = localStorage.getItem("user");
-  if (storedUser) {
-    user.value = JSON.parse(storedUser);
+
+  if (!storedUser) {
+    return;
   }
-  console.log(user.value?.user_fname);
+  user.value = JSON.parse(storedUser);
+  console.log(user.value); //just for debugging and making sure we are getting the data
+
+  const getUserSessions = await fetch(
+    `http://localhost:6969/getUserSessions/${user.value?.id}`,
+  );
+
+  const data = await getUserSessions.json();
+  userSessions.value = data.sessions || [];
+  console.log("Raw sessions:", toRaw(userSessions.value));
 });
 
 /**
 ---------------------------------------------------------------------------------------------
- To make the user logo dynamic we are extracting the user fname, lname and storing them in caps 
+ To make the user logo dynamic we are extracting the user fname, lname and storing them in caps
 ---------------------------------------------------------------------------------------------
  */
 const initials = computed(() => {
@@ -182,11 +161,13 @@ const initials = computed(() => {
   return `${f}${l}`.toUpperCase();
 });
 
+//logout function
 const logout = () => {
   localStorage.removeItem("user");
   router.push("/login");
 };
 
+//function which pushes the user to create a session
 const newPost = () => {
   router.push("/createPost");
 };

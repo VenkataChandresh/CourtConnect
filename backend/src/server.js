@@ -129,6 +129,29 @@ app.post("/createPost", async (req, res) => {
     });
   }
 });
+
+//get method to fetch the user's sessions
+app.get("/getUserSessions/:id", async (req, res) => {
+  try {
+    userId = req.params.id;
+    const getUserSessionsQuery = "SELECT * FROM sessions where created_by = ? ";
+    const [userSession] = await db.query(getUserSessionsQuery, [userId]);
+
+    if (userSession.length > 0) {
+      return res.status(200).json({
+        message: "Successfully fetched the data",
+        sessions: userSession,
+      });
+    } else {
+      return res.status(200).json({ message: "No Sessions Available" });
+    }
+  } catch (err) {
+    console.log(err);
+    return res
+      .status(400)
+      .json({ message: "Issue while fetching the user sessions" });
+  }
+});
 //initializing the port
 const PORT = process.env.PORT || 6969;
 
