@@ -19,7 +19,7 @@
         <div class="user-avatar">
           <!-- using the inital variable to display the user logo-->
           <img
-            :src="`https://ui-avatars.com/api/?name=${initials}&background=4F46E5&color=fff`"
+            :src="`https://ui-avatars.com/api/?name=${initials}&background=F46E5&color=fff`"
           />
         </div>
       </div>
@@ -68,15 +68,33 @@
           <div class="section-header">
             <h2>Upcoming Sessions</h2>
             <div class="filter-group">
-              <button class="filter-btn active">All</button>
-              <button class="filter-btn">Today</button>
-              <button class="filter-btn">This Week</button>
+              <button
+                @click="setActiveFilter('all')"
+                :class="['filter-btn', { active: activeFilter === 'all' }]"
+              >
+                All
+              </button>
+              <button
+                @click="setActiveFilter('today')"
+                :class="['filter-btn', { active: activeFilter === 'today' }]"
+              >
+                Today
+              </button>
+              <button
+                @click="setActiveFilter('this_week')"
+                :class="[
+                  'filter-btn',
+                  { active: activeFilter === 'this_week' },
+                ]"
+              >
+                This Week
+              </button>
             </div>
           </div>
 
           <div class="sessions-list">
             <div
-              v-for="session in userSessions"
+              v-for="session in filteredSessions"
               :key="session.id"
               class="session-card"
             >
@@ -85,7 +103,14 @@
                   <h3>{{ session.title }}</h3>
                   <p class="session-location">📍 {{ session.venue }}</p>
                 </div>
-                <span class="badge badge-green">{{ session.status }}</span>
+                <span
+                  :class="
+                    session.current_players >= session.max_players
+                      ? 'badge badge-red'
+                      : 'badge badge-green'
+                  "
+                  >{{ session.status }}</span
+                >
               </div>
 
               <div class="session-info">
@@ -97,7 +122,9 @@
                 </div>
                 <div class="info-item">
                   <span class="label">Time</span>
-                  <span class="value">{{ session.session_time }}</span>
+                  <span class="value">{{
+                    session.session_time.slice(0, 5)
+                  }}</span>
                 </div>
               </div>
 
@@ -128,6 +155,7 @@ defineOptions({ name: "Dashboard" });
 const user = ref(null);
 var userId = ref(null);
 var userSessions = ref([]);
+var activeFilter = ref("all");
 const router = useRouter();
 
 onMounted(async () => {
@@ -171,6 +199,38 @@ const logout = () => {
 const newPost = () => {
   router.push("/createPost");
 };
+
+//function for the user which let's them sort the sessions
+function setActiveFilter(filter) {
+  activeFilter.value = `${filter}`;
+  console.log(activeFilter.value);
+}
+
+const filteredSessions = computed(() => {
+  const todayStr = new Date().toISOString().split("T")[0];
+
+  if (activeFilter.value === "all") {
+    return userSessions.value;
+  }
+
+  if (activeFilter.value === "today") {
+    return userSessions.value.filter(
+      (s) => s.session_date.split("T")[0] === todayStr,
+    );
+  }
+
+  if (activeFilter.value === "this_week") {
+    const today = new Date(todayStr);
+    const weekFromNow = new Date(today);
+    weekFromNow.setDate(today.getDate() + 7);
+
+    return userSessions.value.filter((s) => {
+      const sessionDateStr = s.session_date.split("T")[0];
+      const sessionDate = new Date(sessionDateStr);
+      return sessionDate >= today && sessionDate <= weekFromNow;
+    });
+  }
+});
 </script>
 <style scoped>
 * {
@@ -478,6 +538,11 @@ const newPost = () => {
 .badge-gray {
   background: #f3f4f6;
   color: #6b7280;
+}
+
+.badge-red {
+  background: #fee2e2;
+  color: #b91c1c;
 }
 
 .session-info {
