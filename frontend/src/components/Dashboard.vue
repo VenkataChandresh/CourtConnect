@@ -167,12 +167,14 @@ onMounted(async () => {
   user.value = JSON.parse(storedUser);
   console.log(user.value); //just for debugging and making sure we are getting the data
 
-  const getUserSessions = await fetch(
+  /**const getUserSessions = await fetch(
     `http://localhost:6969/getUserSessions/${user.value?.id}`,
-  );
+  );**/
 
+  const getUserSessions = await fetch("http://localhost:6969/getUserSessions");
   const data = await getUserSessions.json();
-  userSessions.value = data.sessions || [];
+  console.log(data);
+  userSessions.value = data.allUserSessions || [];
   console.log("Raw sessions:", toRaw(userSessions.value));
 });
 

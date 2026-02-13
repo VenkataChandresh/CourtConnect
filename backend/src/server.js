@@ -130,6 +130,33 @@ app.post("/createPost", async (req, res) => {
   }
 });
 
+app.get("/getUserSessions", async (req, res) => {
+  try {
+    const getUserSessions = `
+      SELECT * FROM sessions
+      WHERE session_date >= CURDATE()
+      ORDER BY session_date ASC, session_time ASC
+    `;
+    const [allUserSessions] = await db.query(getUserSessions);
+
+    if (allUserSessions.length > 0) {
+      return res.status(200).json({
+        message: "Successfully fetched the data",
+        allUserSessions: allUserSessions,
+      });
+    } else {
+      return res
+        .status(200)
+        .json({
+          message: "No Active data found",
+          allUserSessions: "No sessions found",
+        });
+    }
+  } catch (err) {
+    return res.status(400).json({ message: err });
+  }
+});
+
 //get method to fetch the user's sessions
 app.get("/getUserSessions/:id", async (req, res) => {
   try {
